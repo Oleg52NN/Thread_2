@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
 
-import static java.lang.Thread.sleep;
 
 public class Main {
 
@@ -13,9 +12,9 @@ public class Main {
 
         int maxThread = Runtime.getRuntime().availableProcessors();
         final ExecutorService threadPool = Executors.newFixedThreadPool(maxThread);
-        List<Callable<Integer>> thread = new ArrayList<>();
-        final Future<Integer> task[] = new Future[maxThread];
-        List <String> name  = Arrays.asList(
+        List<Callable<String>> thread = new ArrayList<>();
+        final Future<String> task[] = new Future[maxThread];
+        List<String> name = Arrays.asList(
                 "Thread One",
                 "Thread Two",
                 "Thread Three",
@@ -29,17 +28,21 @@ public class Main {
         );
         //final Integer resultOfTask[] = new Integer[maxThread];
         for (int i = 0; i < maxThread; i++) {
-            thread.add(new MyCallable(name.get(i), 10 - i));
+            thread.add(new MyCallable(name.get(i), 10));
             task[i] = threadPool.submit(thread.get(i));
         }
 
         for (int i = 0; i < maxThread; i++) {
-            Integer resultOfTask = task[i].get();
-            System.out.println(name.get(i) + " выполнил " + resultOfTask + " действий");
+            String resultOfTask = task[i].get();
+            System.out.println(name.get(i) + " выполнил " + (Integer.parseInt(resultOfTask) - 1) + " действий");
         }
-        Integer result = threadPool.invokeAny(thread);
-        System.out.println(result + " действий");
-        threadPool.shutdown();
+        for (int i = 0; i < maxThread; i++) {
+            ((MyCallable) thread.get(i)).setMax(10 + i + maxThread);
+        }
+        System.out.println("\n Вторая подзадача \n");
+        String result = threadPool.invokeAny(thread);
+        threadPool.shutdownNow();
+        System.out.println(result);
 
 
     }
